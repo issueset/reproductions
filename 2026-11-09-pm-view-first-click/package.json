@@ -1,0 +1,14 @@
+{
+  "name": "2026-11-09-pm-view-first-click",
+  "private": true,
+  "type": "module",
+  "scripts": { "dev": "vite", "build": "vite build" },
+  "dependencies": {
+    "prosemirror-model": "1.25.12",
+    "prosemirror-schema-basic": "1.2.5",
+    "prosemirror-state": "1.4.4",
+    "pv-old": "npm:prosemirror-view@1.42.9",
+    "pv-beta": "npm:prosemirror-view@1.43.0-beta1"
+  },
+  "devDependencies": { "vite": "7.3.7" }
+}
