@@ -1,0 +1,2 @@
+minimumReleaseAgeExclude:
+  - prosemirror-view@1.43.0-beta2
