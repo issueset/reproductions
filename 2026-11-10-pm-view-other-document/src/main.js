@@ -5,11 +5,9 @@ import { EditorState } from 'prosemirror-state'
 import { setIntro, versions } from './shared.js'
 
 setIntro(`
-<p>Each editor's DOM element is created inside another document (the content of a
-<code>&lt;template&gt;</code>, like Solid does), and then moved into this page. Click in an
-editor and change the selection with Shift+Arrow keys or a mouse drag. In 1.42.9 the state
-selection follows. In 1.43.0-beta2 it stays where it was, because the
-<code>selectionchange</code> listener was registered on the other document.</p>
+<p>Each editor is created inside a <code>&lt;template&gt;</code> document and then moved into this page, as
+<a href="https://www.solidjs.com/">Solid</a> does. Click in an editor and press Shift+Arrow.
+In 1.42.9 the state selection follows. In 1.43.0-beta2 it does not.</p>
 `)
 
 for (const { id, EditorView } of versions) {

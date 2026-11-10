@@ -4,10 +4,9 @@ import { EditorState, TextSelection } from 'prosemirror-state'
 import { setIntro, versions } from './shared.js'
 
 setIntro(`
-<p>Open this page in Safari. Click the button under each editor. It scrolls the editor to the top,
-blurs it, and then, in one tick, calls <code>view.focus()</code> and dispatches a transaction
-that puts the cursor at the end with <code>scrollIntoView()</code>. In 1.42.9 the editor scrolls
-to the end. In 1.43.0-beta2 on Safari it does not scroll. Chrome scrolls in both versions.</p>
+<p>Click the button under each editor. It calls <code>view.focus()</code> and then dispatches
+<code>scrollIntoView()</code> to the end, in one tick. In 1.43.0-beta2 on Safari the editor does not scroll.
+Chrome scrolls in both versions.</p>
 `)
 
 for (const { id, EditorView } of versions) {
