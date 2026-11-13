@@ -1,0 +1,17 @@
+{
+  "name": "2026-11-13-pm-inputrules-max-match",
+  "private": true,
+  "type": "module",
+  "scripts": { "dev": "vite", "build": "vite build" },
+  "dependencies": {
+    "prosemirror-commands": "1.7.2",
+    "prosemirror-history": "1.5.1",
+    "prosemirror-inputrules": "1.5.1",
+    "prosemirror-keymap": "1.2.3",
+    "prosemirror-model": "1.25.12",
+    "prosemirror-schema-basic": "1.2.5",
+    "prosemirror-state": "1.4.4",
+    "prosemirror-view": "1.42.9"
+  },
+  "devDependencies": { "vite": "7.3.7" }
+}

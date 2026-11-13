@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>prosemirror-inputrules 1.5.1: `^` matches 500 characters before the cursor in long textblocks</title>
+  <script type="module" crossorigin src="./assets/index-BJ8q3BO7.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-wjl2pSfR.css">
+</head>
+<body>
+  <h1>prosemirror-inputrules 1.5.1: <code>^</code> matches 500 characters before the cursor in long textblocks</h1>
+  <p><a href="https://github.com/issueset/reproductions/tree/master/2026-11-13-pm-inputrules-max-match">Source code</a></p>
+  <p>
+    <code>prosemirror-inputrules</code> only matches a rule against the last 500 characters before the cursor
+    (<a href="https://code.haverbeke.berlin/prosemirror/prosemirror-inputrules/src/tag/1.5.1/src/inputrules.ts#L115-L116"><code>MAX_MATCH</code></a>).
+    In a longer textblock, <code>^</code> matches at the start of that window, not at the start of the textblock.
+    Each paragraph below puts a marker exactly 500 characters before its end.
+  </p>
+  <div class="columns">
+    <section>
+      <h2>Blockquote: <code>wrappingInputRule(/^&gt;\s/)</code></h2>
+      <p>Click <b>Reset</b>, then type <kbd>x</kbd> <kbd>y</kbd> <kbd>z</kbd>.</p>
+      <p>Expected: the paragraph ends with <code>xyz</code>.<br>
+      Actual: <kbd>x</kbd> deletes the previous character and wraps the paragraph in a blockquote. <kbd>y</kbd> is inserted. <kbd>z</kbd> wraps again, so blockquotes nest.</p>
+      <p><button id="blockquote-reset">Reset</button></p>
+      <div class="editor" id="blockquote"></div>
+      <pre class="log" id="blockquote-log"></pre>
+    </section>
+    <section>
+      <h2>Code block: <code>textblockTypeInputRule(/^```(\S*)\s$/)</code></h2>
+      <p>Click <b>Reset</b>, then type a space.</p>
+      <p>Expected: the paragraph ends with a space.<br>
+      Actual: the paragraph becomes a code block, and the 500 characters before the cursor are deleted. The <code>$</code> anchor doesn't help, because <code>\S*</code> grows to fill the window.</p>
+      <p><button id="code-block-reset">Reset</button></p>
+      <div class="editor" id="code-block"></div>
+      <pre class="log" id="code-block-log"></pre>
+    </section>
+  </div>
+</body>
+</html>
