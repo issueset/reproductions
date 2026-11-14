@@ -80,7 +80,7 @@ for (const version of versions) {
   const host = document.querySelector(`#${version.id}`)
   const logElement = document.querySelector(`#${version.id}-log`)
   const showDoc = () => {
-    logElement.textContent = JSON.stringify(view.state.doc.toJSON(), null, 2)
+    logElement.textContent = view.state.doc.toString()
   }
   const view = new version.EditorView(host, {
     state: createState(),
