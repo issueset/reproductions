@@ -4,17 +4,11 @@ import { EditorState, NodeSelection } from 'prosemirror-state'
 import { setIntro, versions } from './shared.js'
 
 setIntro(`
-<p>Click the button under each editor. It creates an editor whose selection is a <code>NodeSelection</code>
-on the horizontal rule, calls <code>view.focus()</code>, and calls <code>view.destroy()</code> right away.
-The log shows uncaught errors in the next 100ms.</p>
-<p>In Safari, 1.43.0-beta3 throws <code>TypeError: null is not an object (evaluating 'view.docView.descAt')</code>
-about 20ms later. 1.42.9 has no error. Chrome and Firefox have no error in both versions.</p>
-<p>Cause: in Safari the <code>focus</code> event fires before the DOM selection is inside the editor, so
-<code>handlers.focus</code> stores a null range and schedules <code>view.domSel.sync()</code> with
-<code>setTimeout(..., 20)</code>. After <code>destroy()</code>, <code>readRange()</code> also returns the null
-range (the editor DOM is detached), the two ranges are equal, and the timer calls <code>sync()</code> on the
-destroyed view. <code>syncNodeSelection()</code> then reads <code>view.docView</code>, which is <code>null</code>.
-The timer does not check <code>view.isDestroyed</code>.</p>
+<p>The button creates an editor with a <code>NodeSelection</code>, calls <code>view.focus()</code>,
+then <code>view.destroy()</code>.</p>
+<p>In Safari, 1.43.0-beta3 throws <code>TypeError: null is not an object</code> about 20ms later:
+the <code>setTimeout</code> in the <code>focus</code> handler calls <code>view.domSel.sync()</code>
+without checking <code>view.isDestroyed</code>.</p>
 `)
 
 let current = null
