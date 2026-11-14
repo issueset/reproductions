@@ -1,8 +1,8 @@
 // Regenerates index.html from the YYYY-MM-DD-* directories that have a built dist/.
 import { readdirSync, existsSync, readFileSync, writeFileSync } from 'node:fs'
-const dirs = readdirSync('.').filter((d) => /^\d{4}-\d{2}-\d{2}-/.test(d) && existsSync(`${d}/src/index.html`)).sort().reverse()
+const dirs = readdirSync('.').filter((d) => /^\d{4}-\d{2}-\d{2}-/.test(d) && existsSync(`${d}/index.html`)).sort().reverse()
 const items = dirs.map((d) => {
-  const title = /<title>(.*?)<\/title>/.exec(readFileSync(`${d}/src/index.html`, 'utf8'))?.[1] ?? d
+  const title = /<title>(.*?)<\/title>/.exec(readFileSync(`${d}/index.html`, 'utf8'))?.[1] ?? d
   return `    <li><a href="./${d}/">${d}</a> ${title === d ? '' : `: ${title}`}</li>`
 })
 writeFileSync('index.html', `<!doctype html>
