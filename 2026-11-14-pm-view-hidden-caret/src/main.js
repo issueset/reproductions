@@ -5,31 +5,25 @@ import { EditorState, Plugin } from 'prosemirror-state'
 import { setIntro, versions } from './shared.js'
 
 setIntro(`
-<p>Each editor holds one closed <code>&lt;details&gt;</code>. The browser hides everything in it
-except the <code>&lt;summary&gt;</code>.</p>
-<p>Click the frame of the box (the arrow, the border, or the padding) to expand or collapse it.
-The <code>open</code> state is a node attribute, so ProseMirror renders it. Clicking text edits it.</p>
-<p>To see the bug, keep the box closed. Click the empty space in the editor below the box, then type a letter.</p>
+<p>The paragraph inside the closed <code>&lt;details&gt;</code> is hidden.
+Click the empty space below the box, then type a letter.</p>
 <ul>
-  <li>1.42.9: the browser places the caret at the end of "Details", the closest visible text.
-  The letter goes there.</li>
-  <li>1.43.0-beta3: ProseMirror places the caret with <code>posAtCoords</code> and
-  <code>TextSelection.near</code>. The click maps to the end of the document, and
-  <code>TextSelection.near</code> picks the last textblock, the hidden paragraph. No caret is visible.
-  In Firefox the letter goes into the hidden paragraph.</li>
+  <li>1.42.9: the letter goes into "Details".</li>
+  <li>1.43.0-beta3: the caret goes into the hidden paragraph. In Firefox, the letter goes there too.</li>
 </ul>
+<p>Click the frame of the box to expand or collapse it.</p>
 `)
 
 const schema = new Schema({
   nodes: basicSchema.spec.nodes.append({
-    details: {
+    details_root: {
       group: 'block',
-      content: 'summary details_content',
+      content: 'details_summary details_content',
       attrs: { open: { default: false } },
       parseDOM: [{ tag: 'details', getAttrs: (dom) => ({ open: dom.hasAttribute('open') }) }],
       toDOM: (node) => ['details', node.attrs.open ? { open: '' } : {}, 0],
     },
-    summary: {
+    details_summary: {
       content: 'text*',
       parseDOM: [{ tag: 'summary' }],
       toDOM: () => ['summary', 0],
@@ -55,7 +49,7 @@ const detailsToggle = new Plugin({
         if (event.button !== 0 || !(target instanceof HTMLElement) || target.nodeName !== 'DETAILS') return false
         const pos = view.posAtDOM(target, 0) - 1
         const node = view.state.doc.nodeAt(pos)
-        if (node?.type !== schema.nodes.details) return false
+        if (node?.type !== schema.nodes.details_root) return false
         event.preventDefault()
         view.dispatch(view.state.tr.setNodeAttribute(pos, 'open', !node.attrs.open))
         return true
@@ -69,49 +63,39 @@ const detailsToggle = new Plugin({
   },
 })
 
-function createDoc() {
+function createState() {
   const { nodes } = schema
-  return nodes.doc.create(null, [
-    nodes.details.create(null, [
-      nodes.summary.create(null, schema.text('Details')),
+  const doc = nodes.doc.create(null, [
+    nodes.details_root.create(null, [
+      nodes.details_summary.create(null, schema.text('Details')),
       nodes.details_content.create(null, [
         nodes.paragraph.create(null, schema.text('Something small enough to escape casual notice.')),
       ]),
     ]),
   ])
-}
-
-function describeCaret(view) {
-  const { selection, doc } = view.state
-  const $head = doc.resolve(selection.head)
-  const parent = $head.parent
-  const dom = view.dom.ownerDocument.getSelection()
-  let node = dom?.focusNode ?? null
-  if (node && node.nodeType !== 1) node = node.parentElement
-  const hidden = !!node?.closest('details:not([open]) > :not(summary)')
-  return `state caret: ${selection.head} in ${parent.type.name} ${JSON.stringify(parent.textContent)}\nDOM caret in hidden content: ${hidden}`
+  return EditorState.create({ doc, plugins: [detailsToggle] })
 }
 
 for (const version of versions) {
   const host = document.querySelector(`#${version.id}`)
   const logElement = document.querySelector(`#${version.id}-log`)
+  const showDoc = () => {
+    logElement.textContent = JSON.stringify(view.state.doc.toJSON(), null, 2)
+  }
   const view = new version.EditorView(host, {
-    state: EditorState.create({ doc: createDoc(), plugins: [detailsToggle] }),
+    state: createState(),
     dispatchTransaction(tr) {
       view.updateState(view.state.apply(tr))
-      if (tr.docChanged) logElement.textContent = `${describeCaret(view)}\ndoc: ${view.state.doc.toString()}`
+      if (tr.docChanged) showDoc()
     },
   })
-  view.dom.addEventListener('mouseup', () => {
-    setTimeout(() => {
-      logElement.textContent = describeCaret(view)
-    }, 50)
-  })
+  showDoc()
+
   const reset = document.createElement('button')
   reset.textContent = 'Reset'
   reset.addEventListener('click', () => {
-    view.updateState(EditorState.create({ doc: createDoc(), plugins: [detailsToggle] }))
-    logElement.textContent = ''
+    view.updateState(createState())
+    showDoc()
   })
   host.after(reset)
 }
