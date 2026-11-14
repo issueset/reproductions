@@ -1,13 +1,15 @@
 import { Schema } from 'prosemirror-model'
 import { schema as basicSchema } from 'prosemirror-schema-basic'
-import { EditorState } from 'prosemirror-state'
+import { EditorState, Plugin } from 'prosemirror-state'
 
 import { setIntro, versions } from './shared.js'
 
 setIntro(`
 <p>Each editor holds one closed <code>&lt;details&gt;</code>. The browser hides everything in it
 except the <code>&lt;summary&gt;</code>.</p>
-<p>Click the empty space in the editor below "Details", then type a letter.</p>
+<p>Click the frame of the box (the arrow, the border, or the padding) to expand or collapse it.
+The <code>open</code> state is a node attribute, so ProseMirror renders it. Clicking text edits it.</p>
+<p>To see the bug, keep the box closed. Click the empty space in the editor below the box, then type a letter.</p>
 <ul>
   <li>1.42.9: the browser places the caret at the end of "Details", the closest visible text.
   The letter goes there.</li>
@@ -23,8 +25,9 @@ const schema = new Schema({
     details: {
       group: 'block',
       content: 'summary details_content',
-      parseDOM: [{ tag: 'details' }],
-      toDOM: () => ['details', 0],
+      attrs: { open: { default: false } },
+      parseDOM: [{ tag: 'details', getAttrs: (dom) => ({ open: dom.hasAttribute('open') }) }],
+      toDOM: (node) => ['details', node.attrs.open ? { open: '' } : {}, 0],
     },
     summary: {
       content: 'text*',
@@ -38,6 +41,32 @@ const schema = new Schema({
     },
   }),
   marks: basicSchema.spec.marks,
+})
+
+// The `open` attr owns the open state. A press on the frame of a `<details>`
+// (its border, padding, or the `::before` arrow) targets the `<details>`
+// element itself and toggles the attr. A press on text targets a child and
+// edits as usual.
+const detailsToggle = new Plugin({
+  props: {
+    handleDOMEvents: {
+      mousedown(view, event) {
+        const target = event.target
+        if (event.button !== 0 || !(target instanceof HTMLElement) || target.nodeName !== 'DETAILS') return false
+        const pos = view.posAtDOM(target, 0) - 1
+        const node = view.state.doc.nodeAt(pos)
+        if (node?.type !== schema.nodes.details) return false
+        event.preventDefault()
+        view.dispatch(view.state.tr.setNodeAttribute(pos, 'open', !node.attrs.open))
+        return true
+      },
+      // Stop the native toggle that WebKit runs on a click in `<summary>`.
+      click(_view, event) {
+        if (event.target instanceof Element && event.target.closest('summary')) event.preventDefault()
+        return false
+      },
+    },
+  },
 })
 
 function createDoc() {
@@ -67,7 +96,7 @@ for (const version of versions) {
   const host = document.querySelector(`#${version.id}`)
   const logElement = document.querySelector(`#${version.id}-log`)
   const view = new version.EditorView(host, {
-    state: EditorState.create({ doc: createDoc() }),
+    state: EditorState.create({ doc: createDoc(), plugins: [detailsToggle] }),
     dispatchTransaction(tr) {
       view.updateState(view.state.apply(tr))
       if (tr.docChanged) logElement.textContent = `${describeCaret(view)}\ndoc: ${view.state.doc.toString()}`
@@ -81,7 +110,7 @@ for (const version of versions) {
   const reset = document.createElement('button')
   reset.textContent = 'Reset'
   reset.addEventListener('click', () => {
-    view.updateState(EditorState.create({ doc: createDoc() }))
+    view.updateState(EditorState.create({ doc: createDoc(), plugins: [detailsToggle] }))
     logElement.textContent = ''
   })
   host.after(reset)

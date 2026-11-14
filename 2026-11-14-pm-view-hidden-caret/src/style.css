@@ -5,3 +5,10 @@ body { font: 16px/1.5 system-ui, sans-serif; margin: 2rem auto; max-width: 1100p
 .log { background: #f4f4f4; padding: 8px; min-height: 4em; white-space: pre-wrap; font-size: 13px; }
 a { color: #0969da; }
 code { background: #eff1f3; border-radius: 4px; padding: 0.1em 0.35em; font-size: 0.9em; }
+.ProseMirror details { position: relative; border: 1px solid #c8ccd1; border-radius: 6px; padding: 4px 10px 4px 28px; cursor: pointer; }
+.ProseMirror details::before { content: '▶'; position: absolute; left: 9px; top: 7px; font-size: 11px; color: #57606a; transition: transform 0.15s; }
+.ProseMirror details[open]::before { transform: rotate(90deg); }
+.ProseMirror details > * { cursor: text; }
+.ProseMirror summary { display: block; list-style: none; }
+.ProseMirror summary::-webkit-details-marker { display: none; }
+.ProseMirror .details-content p { margin: 4px 0; }
