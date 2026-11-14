@@ -1,6 +1,6 @@
 # reproductions
 
-Browser-runnable bug reproductions, published at https://issueset.github.io/reproductions/.
+Browser-runnable bug reproductions, published at https://issueset.github.io/reproductions/ and https://raw.githack.com/issueset/reproductions/master/.
 
 Each `YYYY-MM-DD-<name>/` directory is a standalone Vite project:
 
